@@ -5,22 +5,25 @@ import urllib.request
 
 
 reddit = praw.Reddit("bot1",
-                     user_agent="Wallget - Saved Wallpaper Downloader"
+                     user_agent="wallget - Saved /r/wallpapers Downloader"
                      )
+valid_ext = ["png", "jpg", "jpeg", "webp"]
+saved = reddit.user.me().saved(limit=50)
 
 print(f'Retreiving saved wallpapers for: {reddit.user.me()}')
 
-saved = reddit.user.me().saved(limit=40)
-
 for link in saved:
     if link.subreddit == 'wallpapers':
-        print(f'{link.title} : {link.url}')
         sanitized_title = re.sub('[\W_]+', '', link.title)
-        extension = link.url.split('.')[-1]
+        extension = link.url.split('.')[-1].lower()
+        if extension not in valid_ext:
+            continue
         filename = f'{sanitized_title}.{extension}'
         if os.path.exists(filename):
             continue
+        print(f'{link.title} : {link.url}')
+
         urllib.request.urlretrieve(link.url, filename)
 
-print("Downloads completed.")
+print("Download(s) completed.")
 
